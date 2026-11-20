@@ -1,0 +1,235 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AquaEncoder.App.MainWindow"
+        Title="AquaEncoder"
+        Width="1120" Height="720" MinWidth="940" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource AqBg}">
+
+  <Grid x:Name="Root" RowDefinitions="Auto,*,Auto" DragDrop.AllowDrop="True">
+
+    <!-- ═════════ ÜST ARAÇ ÇUBUĞU ═════════ -->
+    <Border Grid.Row="0" Background="{DynamicResource AqPanel}"
+            BorderBrush="{DynamicResource AqLine}" BorderThickness="0,0,0,1" Padding="10,6">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2">
+          <TextBlock Text="AquaEncoder" FontWeight="Black" FontSize="16" VerticalAlignment="Center"
+                     Foreground="{DynamicResource AqAccent}" Margin="4,0,14,0"/>
+          <Button x:Name="AddBtn" Classes="tool" Content="＋ Video Ekle" Click="OnAddFiles"/>
+          <Button Classes="tool" Content="📁 Klasör Ekle" Click="OnAddFolder"/>
+          <Button Classes="tool" Content="− Kaldır" Click="OnRemove"/>
+          <Button Classes="tool" Content="Temizle" Click="OnClear"/>
+          <Border Width="1" Margin="8,6" Background="{DynamicResource AqLine}"/>
+          <Button x:Name="StartBtn" Classes="primary" Content="▶  Başlat" Click="OnStart"/>
+          <Button x:Name="StopBtn" Classes="tool" Content="■ Durdur" Click="OnStop" IsEnabled="False"/>
+          <Button x:Name="PreviewBtn" Classes="tool" Content="◐ Önizle" Click="OnPreview"
+                  ToolTip.Tip="Seçili videonun kısa bir bölümünü encode edip oynatıcıda açar"/>
+          <Button Classes="tool" Content="📂 Klasörü Aç" Click="OnOpenFolder"/>
+        </StackPanel>
+        <Button Grid.Column="2" x:Name="ThemeBtn" Classes="tool" Content="☀ Açık tema" Click="OnToggleTheme"/>
+      </Grid>
+    </Border>
+
+    <!-- ═════════ ORTA: KUYRUK + AYARLAR ═════════ -->
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="10">
+
+      <!-- Kuyruk -->
+      <Border Grid.Column="0" Classes="panel" ClipToBounds="True">
+        <Grid RowDefinitions="Auto,*">
+          <Border Grid.Row="0" Background="{DynamicResource AqCard}" Padding="12,8"
+                  BorderBrush="{DynamicResource AqLine}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="28,*,170,150">
+              <TextBlock Grid.Column="1" Classes="label" Text="DOSYA"/>
+              <TextBlock Grid.Column="2" Classes="label" Text="ALTYAZI"/>
+              <TextBlock Grid.Column="3" Classes="label" Text="DURUM"/>
+            </Grid>
+          </Border>
+
+          <Grid Grid.Row="1">
+            <ListBox x:Name="QueueList" Background="Transparent" SelectionMode="Multiple">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="28,*,170,150">
+                    <TextBlock Grid.Column="0" Text="{Binding Glyph}" Foreground="{Binding StatusBrush}"
+                               VerticalAlignment="Center" FontSize="13"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding Detail}" Classes="dim" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Text="{Binding SubLabel}" Classes="dim" FontSize="12"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Spacing="3">
+                      <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="5"
+                                   Foreground="{Binding StatusBrush}"/>
+                      <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{Binding StatusBrush}"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Boş kuyruk ipucu -->
+            <StackPanel x:Name="EmptyHint" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Spacing="8" IsHitTestVisible="False">
+              <TextBlock Text="⬇" FontSize="42" HorizontalAlignment="Center" Classes="dim"/>
+              <TextBlock Text="Videoları buraya sürükle" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+              <TextBlock Classes="dim" HorizontalAlignment="Center" TextAlignment="Center"
+                         Text="Video, altyazı (.ass / .srt) veya klasör bırakabilirsin.&#10;Aynı isimli altyazılar otomatik eşleşir."/>
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- Ayarlar -->
+      <Border Grid.Column="1" Classes="panel" Width="370" Margin="10,0,0,0">
+        <TabControl x:Name="SettingsTabs" Margin="4">
+
+          <!-- Kodlama -->
+          <TabItem Header="Kodlama">
+            <ScrollViewer>
+              <StackPanel Margin="10" Spacing="10">
+                <TextBlock Classes="section" Text="PROFİL"/>
+                <ComboBox x:Name="ProfileBox" HorizontalAlignment="Stretch" SelectedIndex="1">
+                  <ComboBoxItem Content="Hızlı · küçük dosya"/>
+                  <ComboBoxItem Content="Dengeli (önerilen)"/>
+                  <ComboBoxItem Content="Yüksek kalite"/>
+                  <ComboBoxItem Content="Özel"/>
+                </ComboBox>
+
+                <TextBlock Classes="section" Text="KODLAYICI"/>
+                <TextBlock Classes="label" Text="Donanım (kullanılabilenler listelenir)"/>
+                <ComboBox x:Name="BackendBox" HorizontalAlignment="Stretch"/>
+                <TextBlock Classes="label" Text="Codec"/>
+                <ComboBox x:Name="CodecBox" HorizontalAlignment="Stretch" SelectedIndex="0">
+                  <ComboBoxItem Content="H.264 (en uyumlu)"/>
+                  <ComboBoxItem Content="H.265 / HEVC (daha küçük)"/>
+                </ComboBox>
+
+                <TextBlock Classes="section" Text="KALİTE"/>
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Classes="label" Text="CRF / CQ (düşük = daha iyi)"/>
+                  <TextBlock Grid.Column="1" x:Name="QualityLabel" FontWeight="SemiBold"
+                             Foreground="{DynamicResource AqAccent}"/>
+                </Grid>
+                <Slider x:Name="QualitySlider" Minimum="14" Maximum="32" Value="23"
+                        TickFrequency="1" IsSnapToTickEnabled="True"/>
+                <TextBlock Classes="label" Text="Hız / kalite dengesi"/>
+                <ComboBox x:Name="SpeedBox" HorizontalAlignment="Stretch" SelectedIndex="1">
+                  <ComboBoxItem Content="Hızlı"/>
+                  <ComboBoxItem Content="Dengeli"/>
+                  <ComboBoxItem Content="Kaliteli (yavaş)"/>
+                </ComboBox>
+                <TextBlock Classes="label" Text="Çözünürlük"/>
+                <ComboBox x:Name="HeightBox" HorizontalAlignment="Stretch" SelectedIndex="0">
+                  <ComboBoxItem Content="Orijinal"/>
+                  <ComboBoxItem Content="1080p"/>
+                  <ComboBoxItem Content="720p"/>
+                  <ComboBoxItem Content="480p"/>
+                </ComboBox>
+
+                <TextBlock Classes="section" Text="ZAYIF PC"/>
+                <CheckBox x:Name="LowEndBox" Content="Zayıf PC modu (hızlı ön ayar, 2 çekirdek)"/>
+                <TextBlock Classes="label" Text="İşlemci çekirdeği (0 = otomatik)"/>
+                <NumericUpDown x:Name="ThreadsBox" Minimum="0" Maximum="64" Value="0" FormatString="0"/>
+              </StackPanel>
+            </ScrollViewer>
+          </TabItem>
+
+          <!-- Altyazı & Intro -->
+          <TabItem Header="Altyazı &amp; Intro">
+            <ScrollViewer>
+              <StackPanel Margin="10" Spacing="10">
+                <TextBlock Classes="section" Text="SEÇİLİ VİDEONUN ALTYAZISI"/>
+                <TextBlock x:Name="SelSubText" Classes="dim" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="small" Content="Seç…" Click="OnPickSelSub"/>
+                  <Button Classes="small" Content="Kaldır" Click="OnClearSelSub"/>
+                  <Button Classes="small" Content="Toplu eşleştir…" Click="OnMatchSubs"
+                          ToolTip.Tip="Birden fazla altyazı seç, dosya adına göre videolarla eşleşsin"/>
+                </StackPanel>
+
+                <TextBlock Classes="section" Text="INTRO (tüm videolara)"/>
+                <TextBlock x:Name="IntroText" Classes="dim" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="small" Content="Seç…" Click="OnPickIntro"/>
+                  <Button Classes="small" Content="Kaldır" Click="OnClearIntro"/>
+                </StackPanel>
+                <TextBlock Classes="label" TextWrapping="Wrap"
+                           Text="Intro, ana videonun çözünürlüğüne uydurulur ve videonun başına eklenir. Altyazı zamanlaması etkilenmez."/>
+
+                <TextBlock Classes="section" Text="ÖZEL FONTLAR"/>
+                <TextBlock x:Name="FontsText" Classes="dim" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="small" Content="Klasör seç…" Click="OnPickFonts"/>
+                  <Button Classes="small" Content="Kaldır" Click="OnClearFonts"/>
+                </StackPanel>
+              </StackPanel>
+            </ScrollViewer>
+          </TabItem>
+
+          <!-- Ses & Çıkış -->
+          <TabItem Header="Ses &amp; Çıkış">
+            <ScrollViewer>
+              <StackPanel Margin="10" Spacing="10">
+                <TextBlock Classes="section" Text="SES"/>
+                <TextBlock Classes="label" Text="Ses bit hızı (kbps)"/>
+                <NumericUpDown x:Name="AudioBox" Minimum="64" Maximum="320" Increment="32" Value="160" FormatString="0"/>
+                <TextBlock Classes="label" Text="Ses akışı no (çoklu dil varsa)"/>
+                <NumericUpDown x:Name="AudioIdxBox" Minimum="0" Maximum="16" Value="0" FormatString="0"/>
+
+                <TextBlock Classes="section" Text="ÇIKIŞ"/>
+                <TextBlock x:Name="OutDirText" Classes="dim" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="small" Content="Klasör seç…" Click="OnPickOutDir"/>
+                  <Button Classes="small" Content="Videoyla aynı yer" Click="OnClearOutDir"/>
+                </StackPanel>
+                <TextBlock Classes="label" Text="Dosya adı eki"/>
+                <TextBox x:Name="SuffixBox" Text="_hardsub"/>
+                <CheckBox x:Name="OverwriteBox" Content="Varsa üzerine yaz (kapalıysa numara eklenir)"/>
+
+                <TextBlock Classes="section" Text="ÖNİZLEME"/>
+                <Grid ColumnDefinitions="*,10,*">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="label" Text="Başlangıç (sn)"/>
+                    <NumericUpDown x:Name="PreviewStartBox" Minimum="0" Maximum="36000" Increment="10" Value="60" FormatString="0"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Classes="label" Text="Süre (sn)"/>
+                    <NumericUpDown x:Name="PreviewLenBox" Minimum="3" Maximum="60" Increment="5" Value="10" FormatString="0"/>
+                  </StackPanel>
+                </Grid>
+                <TextBlock Classes="label" TextWrapping="Wrap"
+                           Text="Önizleme, altyazının olduğu bir yeri seçip kalite/CRF'yi hızlıca denemek içindir. Intro önizlemede atlanır."/>
+              </StackPanel>
+            </ScrollViewer>
+          </TabItem>
+        </TabControl>
+      </Border>
+    </Grid>
+
+    <!-- ═════════ ALT DURUM ÇUBUĞU ═════════ -->
+    <Border Grid.Row="2" Background="{DynamicResource AqPanel}"
+            BorderBrush="{DynamicResource AqLine}" BorderThickness="0,1,0,0" Padding="12,8">
+      <StackPanel Spacing="6">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock x:Name="StatusText" Text="Hazır." TextTrimming="CharacterEllipsis"/>
+          <TextBlock Grid.Column="1" x:Name="EtaText" Classes="dim"/>
+        </Grid>
+        <ProgressBar x:Name="Bar" Minimum="0" Maximum="100" Height="6"
+                     Foreground="{DynamicResource AqAccent}"/>
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock x:Name="TotalText" Classes="dim" FontSize="12" VerticalAlignment="Center"/>
+          <ProgressBar Grid.Column="1" x:Name="TotalBar" Minimum="0" Maximum="100" Height="4" Margin="10,0"
+                       Foreground="{DynamicResource AqDim}"/>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+            <Button Classes="small" Content="Günlüğü kopyala" Click="OnCopyLog"/>
+            <Button x:Name="LogBtn" Classes="small" Content="Günlük ▴" Click="OnToggleLog"/>
+          </StackPanel>
+        </Grid>
+        <TextBox x:Name="LogBox" IsVisible="False" IsReadOnly="True" Height="150"
+                 TextWrapping="Wrap" AcceptsReturn="True" FontSize="11"
+                 FontFamily="Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono,monospace"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>
