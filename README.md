@@ -78,7 +78,7 @@ Donanım kodlayıcılar (NVENC, QSV, AMF) hızlıdır ama aynı kalite için iş
 Geliştirme için [.NET 8 SDK](https://dotnet.microsoft.com/download) gerekir.
 
 ```bash
-git clone https://github.com/KULLANICI_ADIN/aquacoder.git
+git clone https://github.com/alperr1263/aquacoder.git
 cd aquacoder
 dotnet build
 dotnet run --project src/AquaEncoder.App
