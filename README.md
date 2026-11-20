@@ -2,7 +2,7 @@
 
 # 🎞️ AquaCoder
 
-**AquaFansub için hazırlanmış, ffmpeg tabanlı hardsub + intro encoder.**
+**AquaFansub ve herkes için hazırlanmış, ffmpeg tabanlı hardsub + intro encoder.**
 Hiç bilmeyen biri bile üç adımda altyazılı, intro'lu videoyu encode edebilsin.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-informational)
@@ -162,6 +162,6 @@ Gömülü font çıkarma, akış seçimi, dosya adı şablonu ve CRC32, profille
 
 <div align="center">
 
-**AquaFansub** için ❤️ ile yapıldı
+**AquaFansub** ve herkes için ❤️ ile yapıldı
 
 </div>
