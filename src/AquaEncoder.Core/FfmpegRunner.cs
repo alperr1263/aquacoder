@@ -75,6 +75,96 @@ public sealed class FfmpegRunner
         return double.TryParse(s, NumberStyles.Float, Inv, out var v) ? v : 0;
     }
 
+    // ---------------- Gömülü fontlar ----------------
+
+    private static readonly string[] FontExt = [".ttf", ".otf", ".ttc", ".otc"];
+
+    /// <summary>Videodaki font attachment akışlarını (akış no, dosya adı) olarak listeler.</summary>
+    public async Task<List<(int Index, string Name)>> ListEmbeddedFontsAsync(string video, CancellationToken ct = default)
+    {
+        var res = new List<(int, string)>();
+        var (code, stdout, _) = await RunCaptureAsync(FfprobePath,
+            ["-v", "error", "-print_format", "json", "-show_streams", "-select_streams", "t", video], ct);
+        if (code != 0 || string.IsNullOrWhiteSpace(stdout)) return res;
+
+        using var doc = JsonDocument.Parse(stdout);
+        if (!doc.RootElement.TryGetProperty("streams", out var streams)) return res;
+
+        foreach (var st in streams.EnumerateArray())
+        {
+            if (!st.TryGetProperty("index", out var idxEl)) continue;
+            string name = "", mime = "";
+            if (st.TryGetProperty("tags", out var tags))
+                foreach (var tag in tags.EnumerateObject())               // etiket adı büyük/küçük harf değişebilir
+                {
+                    if (tag.Name.Equals("filename", StringComparison.OrdinalIgnoreCase)) name = tag.Value.GetString() ?? "";
+                    else if (tag.Name.Equals("mimetype", StringComparison.OrdinalIgnoreCase)) mime = tag.Value.GetString() ?? "";
+                }
+
+            bool isFont = FontExt.Contains(Path.GetExtension(name).ToLowerInvariant())
+                          || mime.Contains("font", StringComparison.OrdinalIgnoreCase)
+                          || mime.Contains("truetype", StringComparison.OrdinalIgnoreCase)
+                          || mime.Contains("opentype", StringComparison.OrdinalIgnoreCase);
+            if (isFont) res.Add((idxEl.GetInt32(), string.IsNullOrWhiteSpace(name) ? $"font{idxEl.GetInt32()}.ttf" : name));
+        }
+        return res;
+    }
+
+    /// <summary>
+    /// Gömülü fontları geçici bir klasöre çıkarır (kullanıcının font klasörü varsa onunla birleştirir).
+    /// Videoda gömülü font yoksa null döner; çağıran kullanıcının klasörünü olduğu gibi kullanır.
+    /// Dönen klasör çağıran tarafından silinmelidir.
+    /// </summary>
+    public async Task<string?> ExtractFontsAsync(string video, string? userFontsDir, Action<string>? log, CancellationToken ct = default)
+    {
+        List<(int Index, string Name)> fonts;
+        try { fonts = await ListEmbeddedFontsAsync(video, ct); }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) { log?.Invoke("[font] gömülü fontlar okunamadı: " + ex.Message); return null; }
+        if (fonts.Count == 0) return null;
+
+        string dir = Path.Combine(Path.GetTempPath(), "aquaenc_fonts_" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(dir);
+        try
+        {
+            // Her attachment kendi akış numarasıyla, güvenli bir dosya adına çıkarılır.
+            var args = new List<string> { "-hide_banner", "-nostdin", "-v", "error" };
+            foreach (var (idx, name) in fonts)
+            {
+                string safe = string.Concat(Path.GetFileName(name).Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+                args.AddRange([$"-dump_attachment:{idx}", Path.Combine(dir, $"{idx:00}_{safe}")]);
+            }
+            args.AddRange(["-i", video]);
+            // ffmpeg "çıkış dosyası yok" diye hata koduyla biter ama fontlar yine de çıkarılır; kodu yok sayıyoruz.
+            await RunCaptureAsync(FfmpegPath, args, ct);
+
+            int ok = Directory.EnumerateFiles(dir).Count(f => new FileInfo(f).Length > 0);
+            if (ok == 0) { TryDeleteDir(dir); log?.Invoke("[font] gömülü fontlar çıkarılamadı, sistem fontları kullanılacak."); return null; }
+
+            int user = 0;
+            if (!string.IsNullOrWhiteSpace(userFontsDir) && Directory.Exists(userFontsDir))
+                foreach (var f in Directory.EnumerateFiles(userFontsDir))
+                    if (FontExt.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                    {
+                        File.Copy(f, Path.Combine(dir, "u_" + Path.GetFileName(f)), overwrite: true);
+                        user++;
+                    }
+
+            log?.Invoke($"[font] {ok} gömülü font çıkarıldı" + (user > 0 ? $", {user} kullanıcı fontu eklendi" : "") + ".");
+            return dir;
+        }
+        catch
+        {
+            TryDeleteDir(dir);
+            throw;
+        }
+    }
+
+    private static void TryDeleteDir(string? dir)
+    {
+        try { if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) Directory.Delete(dir, recursive: true); } catch { }
+    }
+
     // ---------------- Kodlama ----------------
 
     public async Task EncodeAsync(EncodeSettings s, IProgress<EncodeProgress>? progress = null,
@@ -96,7 +186,17 @@ public sealed class FfmpegRunner
         double totalSec = main.DurationSeconds + (intro?.DurationSeconds ?? 0);
         if (s.PreviewSeconds > 0)
             totalSec = Math.Max(1, Math.Min(s.PreviewSeconds, main.DurationSeconds - s.PreviewStartSeconds));
-        var args = FfmpegCommandBuilder.Build(s, main, intro);
+        string? tempFonts = null;
+        try
+        {
+        // Hardsub yapılacaksa videonun içindeki fontları çıkar (özel stil fontları doğru görünsün).
+        var es = s;
+        if (s.UseEmbeddedFonts && !string.IsNullOrWhiteSpace(s.SubtitleFile))
+        {
+            tempFonts = await ExtractFontsAsync(s.InputVideo, s.FontsDir, log, ct);
+            if (tempFonts != null) { es = s.Clone(); es.FontsDir = tempFonts; }
+        }
+        var args = FfmpegCommandBuilder.Build(es, main, intro);
 
         // Önce basit adlı geçici dosyaya yaz, bitince asıl ada taşı (yarım dosya asıl adla kalmaz).
         string finalOut = Path.GetFullPath(s.OutputFile);
@@ -171,6 +271,8 @@ public sealed class FfmpegRunner
             throw new InvalidOperationException(
                 $"Kodlama bitti ama dosya asıl adına taşınamadı: {ex.Message}\nGeçici dosya duruyor: {tmpOut}");
         }
+        }
+        finally { TryDeleteDir(tempFonts); }   // geçici font klasörü her durumda silinir
     }
 
     // ---------------- Donanım tespiti ----------------

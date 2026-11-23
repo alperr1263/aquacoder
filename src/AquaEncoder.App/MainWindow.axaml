@@ -157,7 +157,11 @@
                 <TextBlock Classes="label" TextWrapping="Wrap"
                            Text="Intro, ana videonun çözünürlüğüne uydurulur ve videonun başına eklenir. Altyazı zamanlaması etkilenmez."/>
 
-                <TextBlock Classes="section" Text="ÖZEL FONTLAR"/>
+                <TextBlock Classes="section" Text="FONTLAR"/>
+                <CheckBox x:Name="EmbeddedFontsBox" IsChecked="True"
+                          Content="Videodaki gömülü fontları otomatik kullan"
+                          ToolTip.Tip="MKV içindeki font dosyaları çıkarılıp altyazı basılırken kullanılır (önerilen)"/>
+                <TextBlock Classes="label" Text="Ek font klasörü (isteğe bağlı, gömülü fontlarla birleşir)"/>
                 <TextBlock x:Name="FontsText" Classes="dim" TextWrapping="Wrap"/>
                 <StackPanel Orientation="Horizontal" Spacing="6">
                   <Button Classes="small" Content="Klasör seç…" Click="OnPickFonts"/>

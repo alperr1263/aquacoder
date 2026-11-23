@@ -45,6 +45,14 @@ public sealed class EncodeSettings
     /// <summary>Ana videodaki ses akışı sırası (birden fazla dil varsa).</summary>
     public int AudioStreamIndex { get; set; } = 0;
 
+    /// <summary>
+    /// Videonun içine gömülü (attachment) fontları otomatik çıkarıp altyazı basımında kullan.
+    /// Kullanıcı ayrıca FontsDir verdiyse ikisi birleştirilir (aynı adlıysa kullanıcının fontu kazanır).
+    /// </summary>
+    public bool UseEmbeddedFonts { get; set; } = true;
+
+    public EncodeSettings Clone() => (EncodeSettings)MemberwiseClone();
+
     /// <summary>0 = normal encode. &gt;0 = sadece bu kadar saniyelik önizleme (intro atlanır).</summary>
     public int PreviewSeconds { get; set; } = 0;
 

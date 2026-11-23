@@ -18,6 +18,8 @@ yapıp encode alabilsin. Motor: **ffmpeg**. Hedef: Windows + Linux, çok zayıf 
 - Donanım kodlayıcılar `-encoders` listesine güvenilmeden, **1 karelik deneme kodlamasıyla** tespit edilir.
 - Altyazı filtresi yolları `EscapePath` ile kaçışlanır (Windows `C:\...` yolları için şart).
 - ffmpeg, programın yanındaki `ffmpeg/` klasöründe ya da exe ile yan yana aranır; yoksa PATH.
+- **Gömülü fontlar**: hardsub varsa `FfmpegRunner.ExtractFontsAsync` videodaki font attachment'larını (`-dump_attachment:INDEX`) geçici klasöre çıkarır,
+  kullanıcı font klasörüyle birleştirip `fontsdir` olarak verir, encode sonunda (hata/iptal dahil) siler. `EncodeSettings.UseEmbeddedFonts` ile kapatılır.
 - Kodlama süreci düşük öncelikle (BelowNormal) çalışır; PC donmasın.
 
 ## Derleme / çalıştırma
@@ -44,10 +46,11 @@ dotnet publish src/AquaEncoder.App -c Release -r linux-x64 --self-contained -p:P
 
 ## Durum
 - Core + CLI: derlendi, gerçek ffmpeg ile test edildi (hardsub, intro, x265, 480p, önizleme).
-- App: yeniden yazıldı. XAML geçerli XML, C# sözdizimi temiz, ama Avalonia paketi indirilemediği için
-  HENÜZ DERLENMEDİ ve açılıp görülmedi. İlk iş: `dotnet build`, çıkan hataları düzelt, uygulamayı aç, görünümü kontrol et.
+- App: Windows'ta derlendi ve çalışıyor (kullanıcı doğruladı). Çıkış dosyası önce geçici adla yazılıp taşınıyor (`aquaenc_*.part.mp4`), ffmpeg `-nostdin` ile çalışır.
 
 ## Yapılacaklar
+> Ayrıntılı ve güncel plan: **ROADMAP.md** (faz faz, işaretli liste). Bir seferde tek adım yap.
+
 1. App'i derle/çalıştır, hataları düzelt, ekran görüntüsüyle görünümü ince ayarla.
 2. NVENC / QSV / AMF'yi gerçek GPU'lu PC'de dene.
 3. Kuyruk öğesine çift tıklayınca öğeye özel ayar (kalite/intro) penceresi.

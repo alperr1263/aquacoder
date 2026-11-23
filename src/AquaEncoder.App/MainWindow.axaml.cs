@@ -70,6 +70,7 @@ public partial class MainWindow : Window
         AudioIdxBox.Value = _cfg.AudioStreamIndex;
         SuffixBox.Text = _cfg.Suffix;
         OverwriteBox.IsChecked = _cfg.Overwrite;
+        EmbeddedFontsBox.IsChecked = _cfg.UseEmbeddedFonts;
         PreviewStartBox.Value = _cfg.PreviewStart;
         PreviewLenBox.Value = _cfg.PreviewLength;
 
@@ -99,6 +100,7 @@ public partial class MainWindow : Window
         _cfg.AudioStreamIndex = (int)(AudioIdxBox.Value ?? 0);
         _cfg.Suffix = SuffixBox.Text ?? "";
         _cfg.Overwrite = OverwriteBox.IsChecked == true;
+        _cfg.UseEmbeddedFonts = EmbeddedFontsBox.IsChecked == true;
         _cfg.PreviewStart = (int)(PreviewStartBox.Value ?? 60);
         _cfg.PreviewLength = (int)(PreviewLenBox.Value ?? 10);
         _cfg.IntroPath = _intro;
@@ -444,6 +446,7 @@ public partial class MainWindow : Window
             InputVideo = item.Video,
             SubtitleFile = item.Sub,
             FontsDir = _fonts,
+            UseEmbeddedFonts = EmbeddedFontsBox.IsChecked == true,
             IntroVideo = _intro,
             OutputFile = ComputeOutput(item),
             Codec = CodecBox.SelectedIndex == 1 ? VideoCodec.H265 : VideoCodec.H264,

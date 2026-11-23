@@ -31,6 +31,7 @@ var s = new EncodeSettings
     Codec = map.ContainsKey("h265") ? VideoCodec.H265 : VideoCodec.H264,
     Backend = map.GetValueOrDefault("backend", "cpu") switch
     { "nvidia" => EncoderBackend.Nvidia, "qsv" => EncoderBackend.IntelQsv, "amf" => EncoderBackend.AmdAmf, _ => EncoderBackend.Cpu },
+    UseEmbeddedFonts = !map.ContainsKey("no-embedded-fonts"),
     Speed = SpeedPreset.Hizli,
     PreviewSeconds = int.Parse(map.GetValueOrDefault("preview", "0")),
     PreviewStartSeconds = double.Parse(map.GetValueOrDefault("start", "0"), System.Globalization.CultureInfo.InvariantCulture),

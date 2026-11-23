@@ -21,6 +21,7 @@ public sealed class AppSettings
 
     public string? IntroPath { get; set; }
     public string? FontsDir { get; set; }
+    public bool UseEmbeddedFonts { get; set; } = true;
     public string? OutputDir { get; set; }
     public string Suffix { get; set; } = "_hardsub";
     public bool Overwrite { get; set; } = false;

@@ -2,7 +2,7 @@
 
 # 🎞️ AquaCoder
 
-**AquaFansub ve herkes için hazırlanmış, ffmpeg tabanlı hardsub + intro encoder.**
+**AquaFansub için hazırlanmış, ffmpeg tabanlı hardsub + intro encoder.**
 Hiç bilmeyen biri bile üç adımda altyazılı, intro'lu videoyu encode edebilsin.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-informational)
@@ -21,7 +21,8 @@ Hiç bilmeyen biri bile üç adımda altyazılı, intro'lu videoyu encode edebil
 - 🔤 Hardsub: `.ass`, `.ssa`, `.srt` altyazıyı videoya gömer (Türkçe karakter ve boşluklu/özel karakterli yollar dahil)
 - 🎬 Intro ekleme: ana videonun çözünürlüğüne ve fps'ine otomatik uyar, oran bozulmaz; intro'da ses yoksa sessizlik üretir
 - ⏱️ Altyazı zamanlaması intro'dan etkilenmez (altyazı yalnızca ana videoya basılır)
-- 🅰️ Özel font klasörü desteği
+- 🅰️ **Gömülü fontlar otomatik kullanılır**: MKV içindeki fontlar çıkarılıp altyazıya uygulanır, işi bitince temizlenir
+- 🅰️ İsteğe bağlı ek font klasörü (gömülü fontlarla birleşir)
 
 **Kodlama**
 - 🖥️ İşlemci: **x264 / x265**
@@ -78,7 +79,7 @@ Donanım kodlayıcılar (NVENC, QSV, AMF) hızlıdır ama aynı kalite için iş
 Geliştirme için [.NET 8 SDK](https://dotnet.microsoft.com/download) gerekir.
 
 ```bash
-git clone https://github.com/alperr1263/aquacoder.git
+git clone https://github.com/KULLANICI_ADIN/aquacoder.git
 cd aquacoder
 dotnet build
 dotnet run --project src/AquaEncoder.App
@@ -117,7 +118,8 @@ dotnet run --project src/AquaEncoder.Cli -- --in video.mkv --sub altyazi.ass --o
 | `--backend` | `cpu` · `nvidia` · `qsv` · `amf` |
 | `--h265` | H.265 / HEVC kullan |
 | `--height` | `1080` · `720` · `480` |
-| `--fonts` | Özel font klasörü |
+| `--fonts` | Ek font klasörü |
+| `--no-embedded-fonts` | Videodaki gömülü fontları kullanma |
 | `--preview N --start S` | S. saniyeden N saniyelik önizleme |
 | `--verbose` | ffmpeg komutunu ve çıktısını göster |
 
@@ -146,7 +148,7 @@ src/
 |-------|-------|
 | `ffmpeg bulunamadı` | ffmpeg ve ffprobe'u PATH'e ekle ya da uygulamanın yanına koy |
 | Listede ekran kartı kodlayıcısı yok | Ekran kartı sürücüsünü güncelle; yine yoksa işlemci kodlayıcısını kullan |
-| Altyazı yanlış fontla çıkıyor | *Altyazı & Intro* sekmesinden font klasörünü seç |
+| Altyazı yanlış fontla çıkıyor | Video gömülü font içermiyorsa *Altyazı & Intro* sekmesinden font klasörünü seç |
 | Windows "bilgisayarınızı korudu" uyarısı | Yeni imzasız programlarda normaldir: *Ek bilgi → Yine de çalıştır* |
 | Çıkış dosyası yazılamıyor | Başka bir çıkış klasörü seç; güvenlik yazılımının engellemediğini kontrol et |
 
@@ -162,6 +164,6 @@ Gömülü font çıkarma, akış seçimi, dosya adı şablonu ve CRC32, profille
 
 <div align="center">
 
-**AquaFansub** ve herkes için ❤️ ile yapıldı
+**AquaFansub** için ❤️ ile yapıldı
 
 </div>
