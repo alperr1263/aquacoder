@@ -2,7 +2,7 @@
 
 # 🎞️ AquaCoder
 
-**AquaFansub için hazırlanmış, ffmpeg tabanlı hardsub + intro encoder.**
+**AquaFansub ve herkes için hazırlanmış, ffmpeg tabanlı hardsub + intro encoder.**
 Hiç bilmeyen biri bile üç adımda altyazılı, intro'lu videoyu encode edebilsin.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-informational)
@@ -79,7 +79,7 @@ Donanım kodlayıcılar (NVENC, QSV, AMF) hızlıdır ama aynı kalite için iş
 Geliştirme için [.NET 8 SDK](https://dotnet.microsoft.com/download) gerekir.
 
 ```bash
-git clone https://github.com/KULLANICI_ADIN/aquacoder.git
+git clone https://github.com/alperr1263/aquacoder.git
 cd aquacoder
 dotnet build
 dotnet run --project src/AquaEncoder.App
@@ -164,6 +164,6 @@ Gömülü font çıkarma, akış seçimi, dosya adı şablonu ve CRC32, profille
 
 <div align="center">
 
-**AquaFansub** için ❤️ ile yapıldı
+**AquaFansub** ve sizler için ❤️ ile yapıldı
 
 </div>
